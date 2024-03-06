@@ -113,6 +113,6 @@ void main( void )
   P1DIR = 0x1F;
   while (1)
   {
-    runString("NGHIA B2207480, VY B2207511", 50);
+    runString("NGHIA B2207480 VY B2207511", 50);
   }
 }
