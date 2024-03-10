@@ -52,7 +52,7 @@ void shiftOutColumn(unsigned char hex)
 {
   for (int i = 0; i < 8; i++)
   {
-    if (!(hex & (1 << i)))
+    if ((hex & (1 << i)))
       P1OUT |= DS_COLUMN;
     else 
       P1OUT &= ~DS_COLUMN;
@@ -64,7 +64,7 @@ void shiftOutRow(unsigned char hex)
 {
   for (int i = 0; i < 8; i++)
   {
-    if (!(hex & (1 << i)))
+    if ((hex & (1 << i)))
       P1OUT |= DS_ROW;
     else 
       P1OUT &= ~DS_ROW;
@@ -110,7 +110,7 @@ void runString(char *str, unsigned int delay)
 void main( void )
 {
   WDTCTL = WDTPW + WDTHOLD;
-  P1DIR = 0x1F;
+  P1DIR = 0x1F; //0001 1111
   while (1)
   {
     runString("NGHIA B2207480 VY B2207511", 50);
