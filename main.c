@@ -1,4 +1,4 @@
-#include "msp430f2132.h"
+#include "msp430g2553.h"
 #include <string.h>
 
 #define LATCH_DATA BIT0
