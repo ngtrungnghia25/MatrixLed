@@ -1,11 +1,9 @@
-#include "msp430g2553.h"
+#include "msp430f2132.h"
 #include <string.h>
 
 #define LATCH_DATA BIT0
-#define CLOCK_SH_CP_COLUMN BIT1
-#define DS_COLUMN BIT2
-#define CLOCK_SH_CP_ROW BIT3
-#define DS_ROW BIT4
+#define CLOCK BIT1
+#define DATA BIT2
 unsigned char charactersHEX[][8] = {
   {0xFF,0x03,0x01,0xED,0xED,0x01,0x03,0xFF},//A
   {0xFF,0x01,0x01,0x6D,0x6D,0x01,0x93,0xFF},//B 
@@ -48,42 +46,39 @@ unsigned char charactersHEX[][8] = {
 unsigned char led[][8] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};	
 
 char character[]={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0',' '};
-void shiftOutColumn(unsigned char hex)
+
+void xuatDuLieu(unsigned char duLieuHang, unsigned char duLieuCot)
 {
-  for (int i = 0; i < 8; i++)
-  {
-    if ((hex & (1 << i)))
-      P1OUT |= DS_COLUMN;
-    else 
-      P1OUT &= ~DS_COLUMN;
-    P1OUT |= CLOCK_SH_CP_COLUMN;
-    P1OUT &= ~CLOCK_SH_CP_COLUMN;
-  }
-}
-void shiftOutRow(unsigned char hex)
-{
-  for (int i = 0; i < 8; i++)
-  {
-    if ((hex & (1 << i)))
-      P1OUT |= DS_ROW;
-    else 
-      P1OUT &= ~DS_ROW;
-    P1OUT |= CLOCK_SH_CP_ROW;
-    P1OUT &= ~CLOCK_SH_CP_ROW;
-  }
-}
-void drawOneCharacter(unsigned char character[][8])
-{
-  for (int i = 0; i < 8; i++)
-  {
     P1OUT &= ~LATCH_DATA; 
-    shiftOutRow(character[0][i]);
-    shiftOutColumn((0x01 << i));
+    for (int i = 0; i < 8; i++)
+    {
+      if ((duLieuHang & (1 << i)))
+        P1OUT |= DATA;
+      else 
+        P1OUT &= ~DATA;
+      P1OUT |= CLOCK;
+      P1OUT &= ~CLOCK;
+    }
+    for (int i = 0; i < 8; i++)
+    {
+      if ((duLieuCot & (1 << i)))
+        P1OUT |= DATA;
+      else 
+        P1OUT &= ~DATA;
+      P1OUT |= CLOCK;
+      P1OUT &= ~CLOCK;
+    }
     P1OUT |= LATCH_DATA;
+}
+void hienChu(unsigned char character[][8])
+{
+  for (int i = 0; i < 8; i++)
+  {
+    xuatDuLieu(character[0][i], 0x01 << i);
       __delay_cycles(10);
   }
 }
-void runOneCharacter(unsigned int delay, unsigned int indexCharacter)
+void chayChu(unsigned int delay, unsigned int indexCharacter)
 {
   for(int i = 0; i < 8; i++)
   {
@@ -91,18 +86,18 @@ void runOneCharacter(unsigned int delay, unsigned int indexCharacter)
       led[0][j] = led[0][j+1];
     led[0][7] = charactersHEX[indexCharacter][i];
     for(int k = 0; k < delay; k++)
-      drawOneCharacter(led);
+      hienChu(led);
   }
 }
-void runString(char *str, unsigned int delay)
+void chayChuoiKyTu(char *str, unsigned int delay)
 {
   for (int i = 0; i < strlen(str); i++)
     for (int j = 0; j < sizeof(character); j++)
       if (str[i] == character[j])
       {
-        runOneCharacter(delay, j);
+        chayChu(delay, j);
         if (i == strlen(str) - 1)
-          runOneCharacter(delay, 36);
+          chayChu(delay, 36);
         break;
       }
 }
@@ -110,9 +105,9 @@ void runString(char *str, unsigned int delay)
 void main( void )
 {
   WDTCTL = WDTPW + WDTHOLD;
-  P1DIR = 0x1F; //0001 1111
+  P1DIR = 0x1F;
   while (1)
   {
-    runString("NGHIA B2207480 VY B2207511", 50);
+    chayChuoiKyTu("NGHIA B2207480 VY B2207511", 50);
   }
 }
