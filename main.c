@@ -1,9 +1,6 @@
 #include "msp430g2553.h"
 #include <string.h>
 
-#define LATCH_DATA BIT0
-#define CLOCK BIT1
-#define DATA BIT2
 unsigned char charactersHEX[][8] = {
   {0xFF,0x03,0x01,0xED,0xED,0x01,0x03,0xFF},//A
   {0xFF,0x01,0x01,0x6D,0x6D,0x01,0x93,0xFF},//B 
@@ -49,37 +46,20 @@ char character[]={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P
 
 void xuatDuLieu(unsigned char duLieuHang, unsigned char duLieuCot)
 {
-    P1OUT &= ~LATCH_DATA; 
-    for (int i = 0; i < 8; i++)
-    {
-      if ((duLieuHang & (1 << i)))
-        P1OUT |= DATA;
-      else 
-        P1OUT &= ~DATA;
-      P1OUT |= CLOCK;
-      P1OUT &= ~CLOCK;
-    }
-    for (int i = 0; i < 8; i++)
-    {
-      if ((duLieuCot & (1 << i)))
-        P1OUT |= DATA;
-      else 
-        P1OUT &= ~DATA;
-      P1OUT |= CLOCK;
-      P1OUT &= ~CLOCK;
-    }
-    P1OUT |= LATCH_DATA;
+    P2OUT = duLieuHang;
+    P1OUT = duLieuCot;
 }
 void hienChu(unsigned char character[][8])
 {
   for (int i = 0; i < 8; i++)
   {
     xuatDuLieu(character[0][i], 0x01 << i);
-      __delay_cycles(10);
+      __delay_cycles(1000);
   }
 }
-void chayChu(unsigned int delay, unsigned int indexCharacter)
+void chayChu(unsigned int indexCharacter)
 {
+  int delay = 30;
   for(int i = 0; i < 8; i++)
   {
     for(int j = 0; j < 7; j++)
@@ -89,15 +69,15 @@ void chayChu(unsigned int delay, unsigned int indexCharacter)
       hienChu(led);
   }
 }
-void chayChuoiKyTu(char *str, unsigned int delay)
+void chayChuoiKyTu(char *str)
 {
   for (int i = 0; i < strlen(str); i++)
     for (int j = 0; j < sizeof(character); j++)
       if (str[i] == character[j])
       {
-        chayChu(delay, j);
+        chayChu(j);
         if (i == strlen(str) - 1)
-          chayChu(delay, 36);
+          chayChu(36);
         break;
       }
 }
@@ -105,9 +85,14 @@ void chayChuoiKyTu(char *str, unsigned int delay)
 void main( void )
 {
   WDTCTL = WDTPW + WDTHOLD;
-  P1DIR = 0x1F;
+  
+  P1DIR = 0xFF;
+  P2DIR = 0xFF;
+   
+  P2SEL = BIT6 + BIT7;
+  P2SEL &= ~(BIT6+BIT7);
   while (1)
   {
-    chayChuoiKyTu("NGHIA B2207480 VY B2207511", 50);
+    chayChuoiKyTu("NGHIAB2207480VYB2207511");
   }
 }
